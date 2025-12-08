@@ -7,9 +7,15 @@ WORKDIR /app
 # Copy requirements first to leverage cache
 COPY backend/requirements.txt /app/requirements.txt
 
-# Install dependencies (including gunicorn)
-# We also install libgl1 because opencv needs it
-RUN apt-get update && apt-get install -y libgl1-mesa-glx && rm -rf /var/lib/apt/lists/*
+# Install system dependencies for OpenCV and image processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 # Copy the backend code and ml_pipeline
