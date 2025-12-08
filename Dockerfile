@@ -1,5 +1,5 @@
-# Use Python 3.9
-FROM python:3.9-slim
+# Use Python 3.9 with full dependencies
+FROM python:3.9
 
 # Set working directory
 WORKDIR /app
@@ -8,13 +8,12 @@ WORKDIR /app
 COPY backend/requirements.txt /app/requirements.txt
 
 # Install system dependencies for OpenCV and image processing
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
