@@ -61,9 +61,8 @@ try {
 const appId = (typeof __app_id !== 'undefined') ? __app_id : 'looks-maximizer-mvp';
 
 // --- API Configuration ---
-// Check if we have a VITE_API_URL environment variable (for Vercel/Production)
-// If not, default to empty string which means it will use the relative path (proxy)
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+// Use Railway backend in production, localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 // --- Error Boundary ---
 class ErrorBoundary extends React.Component {
