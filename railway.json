@@ -4,8 +4,6 @@
     "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "gunicorn -b 0.0.0.0:$PORT backend.app:app --timeout 120",
-    "restartPolicyType": "on-failure",
-    "restartPolicyMaxRetries": 5
+    "startCommand": "gunicorn -b 0.0.0.0:$PORT backend.app:app --timeout 120"
   }
 }
