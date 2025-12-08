@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+kaggle.json
+
+# Dataset
+datasets/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Models (Too large for GitHub)
+*.pth
+*.onnx
+*.onnx.data
+ml_pipeline/*.pth
+ml_pipeline/*.onnx
+ml_pipeline/*.onnx.data
+backend/models/
+
+# Large Model Data Directories
+ml_pipeline/Scut/
+ml_pipeline/CelebA/
+ml_pipeline/HuggingFace/
+
+# IDE
+.vscode/
+.idea/
