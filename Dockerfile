@@ -30,8 +30,8 @@ ENV HOME=/home/user \
     PYTHONPATH=$PYTHONPATH:/app \
     PORT=8000
 
-# Expose port (Railway uses PORT env var)
-EXPOSE $PORT
+# Expose port
+EXPOSE 8000
 
-# Run the application - uses PORT env variable from Railway
+# Run the application - uses PORT env variable from Railway (defaults to 8000)
 CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8000} backend.app:app --timeout 120 --workers 2"]
