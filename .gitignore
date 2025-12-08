@@ -15,13 +15,9 @@ node_modules/
 dist/
 .DS_Store
 
-# Models (Too large for GitHub)
+# Models (Too large/Redundant for GitHub)
 *.pth
-*.onnx
-*.onnx.data
 ml_pipeline/*.pth
-ml_pipeline/*.onnx
-ml_pipeline/*.onnx.data
 backend/models/
 
 # Large Model Data Directories
