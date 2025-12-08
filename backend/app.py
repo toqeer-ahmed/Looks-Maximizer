@@ -1,7 +1,7 @@
 import os
 import time
 import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -9,8 +9,20 @@ from google.oauth2 import service_account
 # --- Configuration ---
 app = Flask(__name__)
 
-# Enable CORS for all routes
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "DELETE", "OPTIONS"]}})
+# Enable CORS for all routes - allow all origins
+CORS(app, 
+     origins=["*"], 
+     methods=["GET", "POST", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=False)
+
+# Additional CORS headers for all responses
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 # Environment Variables (with defaults for development)
 FLASK_APP_ID = os.environ.get('FLASK_APP_ID', 'looks-maximizer-mvp')
