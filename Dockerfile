@@ -27,11 +27,10 @@ RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
-    PYTHONPATH=$PYTHONPATH:/app \
-    PORT=8000
+    PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8000
 
-# Run the application on PORT (Railway provides this)
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "backend.app:app", "--timeout", "120", "--workers", "2"]
+# Run the application - gunicorn with proper module path
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "--timeout", "120", "--workers", "2", "backend.app:app"]

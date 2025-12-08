@@ -45,7 +45,7 @@ MOCKED_RESULTS = {
     }
 }
 
-from inference import model_manager
+from backend.inference import model_manager
 
 # --- Helper Functions ---
 
