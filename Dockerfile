@@ -33,5 +33,5 @@ ENV HOME=/home/user \
 # Expose port
 EXPOSE 8000
 
-# Run the application - uses PORT env variable from Railway (defaults to 8000)
-CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8000} backend.app:app --timeout 120 --workers 2"]
+# Run the application on PORT (Railway provides this)
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "backend.app:app", "--timeout", "120", "--workers", "2"]
