@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.env
+node_modules
+dist
+.DS_Store
+training_scripts
+datasets
+kaggle.json
+*.ipynb
+.vscode
+.idea
+README.md

@@ -16,12 +16,16 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 COPY backend /app/backend
 COPY ml_pipeline /app/ml_pipeline
 
-# Create a non-root user (Hugging Face requirement)
+# Create a non-root user
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
-    PYTHONPATH=$PYTHONPATH:/app
+    PYTHONPATH=$PYTHONPATH:/app \
+    PORT=8000
 
-# Run the application on port 7860
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "backend.app:app"]
+# Expose port (Railway uses PORT env var)
+EXPOSE $PORT
+
+# Run the application - uses PORT env variable from Railway
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8000} backend.app:app --timeout 120 --workers 2"]
