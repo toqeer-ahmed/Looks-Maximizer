@@ -5,3 +5,4 @@ numpy
 onnxruntime
 google-cloud-firestore
 google-auth
+gunicorn
