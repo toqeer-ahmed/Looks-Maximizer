@@ -30,7 +30,7 @@ ENV HOME=/home/user \
     PYTHONPATH=/app
 
 # Expose port
-EXPOSE 8000
+EXPOSE 8080
 
 # Run the application - gunicorn with proper module path
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "--timeout", "120", "--workers", "2", "backend.app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "--timeout", "120", "--workers", "2", "backend.app:app"]
