@@ -8,8 +8,19 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSONB
 
+import os
+import time
+import datetime
+import json
+import hashlib
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import JSONB
+
 # --- Configuration ---
-app = Flask(__name__)
+# Use /tmp for instance path to avoid PermissionError on read-only file systems (Railway/Render)
+app = Flask(__name__, instance_path='/tmp')
 
 # Enable CORS
 CORS(app, 
