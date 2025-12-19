@@ -6,3 +6,5 @@ onnxruntime
 google-cloud-firestore
 google-auth
 gunicorn
+psycopg2-binary
+flask-sqlalchemy
