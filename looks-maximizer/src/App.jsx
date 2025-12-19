@@ -51,10 +51,10 @@ try {
     db = getFirestore(app);
     firebaseInitialized = true;
   } else {
-    console.warn("Firebase config not found. Running in offline/mock mode.");
+    console.log("Firebase config not found. Running in Local Backend mode.");
   }
 } catch (error) {
-  console.error("Failed to initialize Firebase:", error);
+  console.log("Running in Local Backend mode (Firebase init skipped).");
 }
 
 
@@ -62,7 +62,7 @@ const appId = (typeof __app_id !== 'undefined') ? __app_id : 'looks-maximizer-mv
 
 // --- API Configuration ---
 // Use Railway backend in production, localhost in development
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // --- Error Boundary ---
 class ErrorBoundary extends React.Component {
@@ -160,15 +160,90 @@ const Card = ({ children, className = '' }) => (
   </div>
 );
 
+const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+      <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-4xl w-full relative shadow-2xl shadow-purple-500/20 my-8">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white z-10">
+          <X className="w-6 h-6" />
+        </button>
+
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2">Maximize Your Potential</h2>
+          <p className="text-slate-400">Choose the plan that fits your goals.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Pro Plan */}
+          <div className="border border-purple-500/30 bg-slate-900/50 rounded-xl p-6 relative hover:border-purple-500 transition-colors">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">MOST POPULAR</div>
+            <h3 className="text-xl font-bold mb-2">Pro</h3>
+            <div className="text-3xl font-bold mb-4">$9.99<span className="text-sm text-slate-500 font-normal">/mo</span></div>
+            <p className="text-sm text-slate-400 mb-6">For individuals serious about looks maxing.</p>
+            <ul className="space-y-3 mb-8 text-sm">
+              {[
+                "Unlimited AI Analysis",
+                "Full Looks Maxer Report (PDF)",
+                "Detailed Symmetry Analysis",
+                "Skin Quality Indicators",
+                "Priority Inference Queue"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-4 h-4 text-purple-400 shrink-0" /> {item}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={() => onUpgrade('pro')} className="w-full bg-purple-600 hover:bg-purple-500">Get Pro</Button>
+          </div>
+
+          {/* Elite Plan */}
+          <div className="border border-amber-500/30 bg-slate-900/50 rounded-xl p-6 relative hover:border-amber-500 transition-colors">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 rounded-full text-xs font-bold shadow-lg text-black">ELITE</div>
+            <h3 className="text-xl font-bold mb-2 text-amber-500">Elite</h3>
+            <div className="text-3xl font-bold mb-4">$19.99<span className="text-sm text-slate-500 font-normal">/mo</span></div>
+            <p className="text-sm text-slate-400 mb-6">For influencers & content creators.</p>
+            <ul className="space-y-3 mb-8 text-sm">
+              {[
+                "Everything in Pro",
+                "Side-by-side Comparisons",
+                "Style Evolution Tracking",
+                "AI Improvement Roadmap",
+                "Professional Grooming Tips"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-4 h-4 text-amber-500 shrink-0" /> {item}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={() => onUpgrade('elite')} className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white">Get Elite</Button>
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-slate-500 mt-6">
+          Cancel anytime. Secure payment via Stripe.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 // --- Views ---
 
 const LandingView = ({ onGetStarted }) => (
   <div className="min-h-screen flex flex-col">
     <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-      <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400">
-        LooksMax
+      <div className="flex items-center gap-2">
+        <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400">
+          Looks Maxer
+        </div>
+        <span className="bg-purple-500/10 text-purple-400 text-xs px-2 py-0.5 rounded-full border border-purple-500/20 font-medium">BETA</span>
       </div>
-      <Button variant="secondary" onClick={onGetStarted} className="!px-4 !py-2 text-sm">Sign In</Button>
+      <div className="flex gap-4">
+        <button className="hidden md:block text-slate-400 hover:text-white transition-colors">Pricing</button>
+        <Button variant="secondary" onClick={onGetStarted} className="!px-4 !py-2 text-sm">Sign In</Button>
+      </div>
     </nav>
 
     <main className="flex-1 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
@@ -198,6 +273,55 @@ const LandingView = ({ onGetStarted }) => (
           </Card>
         ))}
       </div>
+
+      {/* Pricing Section */}
+      {/* Pricing Section */}
+      <div className="mt-32 max-w-6xl mx-auto w-full text-center pb-20">
+        <h2 className="text-3xl font-bold mb-4">Pricing Plans</h2>
+        <p className="text-slate-400 mb-12">Start for free, upgrade for mastery.</p>
+
+        <div className="grid md:grid-cols-3 gap-8 px-4">
+          {/* Free Plan */}
+          <Card className="text-left border-slate-700 bg-slate-900/50 flex flex-col">
+            <h3 className="text-xl font-bold mb-2">Starter</h3>
+            <div className="text-3xl font-bold mb-6">$0<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-slate-500" /> 1 Photo per Day</li>
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-slate-500" /> Basic Analysis</li>
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-slate-500" /> 1 Recommendation</li>
+            </ul>
+            <Button variant="outline" onClick={onGetStarted} className="w-full mt-auto">Get Started</Button>
+          </Card>
+
+          {/* Pro Plan */}
+          <Card className="text-left border-purple-500/50 bg-gradient-to-b from-slate-800 to-slate-900 relative overflow-hidden flex flex-col transform scale-105 shadow-2xl shadow-purple-900/20 z-10">
+            <div className="absolute top-0 right-0 bg-purple-500 text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+            <h3 className="text-xl font-bold mb-2">Pro</h3>
+            <div className="text-3xl font-bold mb-6">$9.99<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> <strong>Unlimited</strong> Uploads</li>
+              <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> Detailed Reports (PDF)</li>
+              <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> 3-5 Style Options</li>
+              <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> Symmetry Analysis</li>
+            </ul>
+            <Button onClick={onGetStarted} className="w-full bg-purple-600 hover:bg-purple-500 mt-auto">Start Free Trial</Button>
+          </Card>
+
+          {/* Elite Plan */}
+          <Card className="text-left border-amber-500/30 bg-slate-900/50 flex flex-col">
+            <h3 className="text-xl font-bold mb-2 text-amber-500">Elite</h3>
+            <div className="text-3xl font-bold mb-6">$19.99<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Everything in Pro</li>
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Before/After Comparisons</li>
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Evolution Tracking</li>
+              <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Priority Support</li>
+            </ul>
+            <Button variant="outline" onClick={onGetStarted} className="w-full border-amber-500/50 text-amber-500 hover:bg-amber-500/10 mt-auto">Get Elite</Button>
+          </Card>
+        </div>
+      </div>
+
     </main>
   </div>
 );
@@ -208,10 +332,9 @@ const AuthView = ({ onAuthSuccess }) => {
   const [password, setPassword] = useState('');
 
   // New Onboarding Fields
+  const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('Male');
-  const [height, setHeight] = useState('');
-  const [skinTone, setSkinTone] = useState('Fair');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -219,20 +342,44 @@ const AuthView = ({ onAuthSuccess }) => {
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!auth) {
-      // Mock Auth for offline mode
-      const mockUser = {
-        uid: "mock_user_" + Math.floor(Math.random() * 1000),
-        email: email || "mock@example.com",
-        displayName: email ? email.split('@')[0] : "Guest User",
-        // Store extra details in user object for now
-        details: !isLogin ? { age, gender, height, skinTone } : {}
-      };
+      if (!email || !password) {
+        setError("Please enter both email and password to proceed.");
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
-      setTimeout(() => {
-        onAuthSuccess(mockUser);
+      setError('');
+
+      try {
+        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+        const payload = {
+          email,
+          password,
+          details: !isLogin ? { name, age, gender } : {}
+        };
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Authentication failed');
+        }
+
+        // Store user in local state
+        // data.user comes from backend with uid, email, details
+        onAuthSuccess(data.user);
+      } catch (err) {
+        console.error("Auth error:", err);
+        setError(err.message);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
       return;
     }
     // ... Real Firebase Auth logic would go here ...
@@ -274,8 +421,15 @@ const AuthView = ({ onAuthSuccess }) => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
+
           {!isLogin && (
             <>
+              <Input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   type="number"
@@ -291,25 +445,6 @@ const AuthView = ({ onAuthSuccess }) => {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  type="text"
-                  placeholder="Height (e.g. 5'10)"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                />
-                <select
-                  value={skinTone}
-                  onChange={(e) => setSkinTone(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="Fair">Fair</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Olive">Olive</option>
-                  <option value="Brown">Brown</option>
-                  <option value="Dark">Dark</option>
                 </select>
               </div>
             </>
@@ -335,69 +470,101 @@ const AuthView = ({ onAuthSuccess }) => {
   );
 };
 
-const DashboardView = ({ user, onStartAnalysis, history }) => (
-  <div className="max-w-6xl mx-auto px-4 py-8">
-    <header className="flex justify-between items-center mb-12">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Hello, <span className="text-blue-400">{user?.displayName || user?.email?.split('@')[0]}</span></h1>
-        <p className="text-slate-400">Ready to maximize your look today?</p>
-      </div>
-      <Button onClick={onStartAnalysis}>
-        <Plus className="w-5 h-5" /> Start New Analysis
-      </Button>
-    </header>
+const DashboardView = ({ user, onStartAnalysis, history }) => {
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const FREE_LIMIT = 5;
+  const usageCount = history.length;
+  const isLimitReached = usageCount >= FREE_LIMIT;
 
-    <section>
-      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-        <Activity className="w-5 h-5 text-blue-400" /> Recent Activity
-      </h2>
+  const handleStartClick = () => {
+    if (isLimitReached) {
+      setShowPremiumModal(true);
+    } else {
+      onStartAnalysis();
+    }
+  };
 
-      {history.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed border-slate-700 rounded-2xl">
-          <p className="text-slate-500 mb-4">No analyses yet.</p>
-          <Button variant="outline" onClick={onStartAnalysis}>Analyze First Photo</Button>
+  const handleUpgrade = () => {
+    alert("This is a demo! In a real app, this would open Stripe checkout.");
+    setShowPremiumModal(false);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onUpgrade={handleUpgrade}
+      />
+
+      <header className="flex justify-between items-center mb-12">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Hello, <span className="text-blue-400">{user?.displayName || user?.email?.split('@')[0]}</span></h1>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400">Free Plan: {usageCount} / {FREE_LIMIT} analyses used</span>
+            {isLimitReached && <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full border border-red-500/20">Limit Reached</span>}
+          </div>
         </div>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* New Analysis Card */}
-          <button
-            onClick={onStartAnalysis}
-            className="bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group h-full min-h-[200px]"
-          >
-            <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Plus className="w-8 h-8 text-slate-400 group-hover:text-blue-400" />
-            </div>
-            <span className="font-semibold text-slate-300 group-hover:text-white">New Analysis</span>
-          </button>
+        <Button onClick={handleStartClick} variant={isLimitReached ? 'secondary' : 'primary'}>
+          {isLimitReached ? <Sparkles className="w-5 h-5 text-purple-400" /> : <Plus className="w-5 h-5" />}
+          {isLimitReached ? 'Unlock Premium' : 'Start New Analysis'}
+        </Button>
+      </header>
 
-          {history.map((item) => (
-            <Card key={item.id} className="relative group hover:border-blue-500/50 transition-colors">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm('Are you sure you want to delete this analysis?')) item.onDelete(item.id);
-                }}
-                className="absolute top-4 right-4 p-2 bg-slate-900/50 rounded-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
-                title="Delete Analysis"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+      <section>
+        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-blue-400" /> Recent Activity
+        </h2>
 
-              <div className="flex justify-between items-start mb-4">
-                <span className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full">
-                  {item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Just now'}
-                </span>
-                <span className="font-bold text-lg text-green-400">{item.lookScore}/100</span>
+        {history.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-slate-700 rounded-2xl">
+            <p className="text-slate-500 mb-4">No analyses yet.</p>
+            <Button variant="outline" onClick={handleStartClick}>Analyze First Photo</Button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* New Analysis Card */}
+            <button
+              onClick={handleStartClick}
+              className={`bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group h-full min-h-[200px] ${isLimitReached ? 'opacity-75' : ''}`}
+            >
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${isLimitReached ? 'bg-purple-500/20' : 'bg-slate-700/50'}`}>
+                {isLimitReached ? <Sparkles className="w-8 h-8 text-purple-400" /> : <Plus className="w-8 h-8 text-slate-400 group-hover:text-blue-400" />}
               </div>
-              <h3 className="font-semibold mb-1">{item.faceShape}</h3>
-              <p className="text-sm text-slate-400 truncate">{item.recommendations?.hairstyles?.[0]}</p>
-            </Card>
-          ))}
-        </div>
-      )}
-    </section>
-  </div>
-);
+              <span className="font-semibold text-slate-300 group-hover:text-white">
+                {isLimitReached ? 'Unlock Unlimited' : 'New Analysis'}
+              </span>
+            </button>
+
+            {history.map((item) => (
+              <Card key={item.id} className="relative group hover:border-blue-500/50 transition-colors">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to delete this analysis?')) item.onDelete(item.id);
+                  }}
+                  className="absolute top-4 right-4 p-2 bg-slate-900/50 rounded-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Delete Analysis"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <div className="flex justify-between items-start mb-4">
+                  <span className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full">
+                    {item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Just now'}
+                  </span>
+                  <span className="font-bold text-lg text-green-400">{item.lookScore}/100</span>
+                </div>
+                <h3 className="font-semibold mb-1">{item.faceShape}</h3>
+                <p className="text-sm text-slate-400 truncate">{item.recommendations?.hairstyles?.[0]}</p>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+};
 
 const CameraView = ({ onCapture, onBack }) => {
   const videoRef = useRef(null);
@@ -548,13 +715,16 @@ const UploadView = ({ onAnalyze, loading, onBack, onOpenCamera }) => {
   );
 };
 
-const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
+const ResultsView = ({ results, onReset, onFeedback, onBack, onShowPremium }) => {
   const [feedbackGiven, setFeedbackGiven] = useState(null);
 
   const handleFeedback = (isHelpful) => {
     setFeedbackGiven(isHelpful);
     onFeedback(isHelpful);
   };
+
+  const isPremium = results.is_premium;
+  const isPreview = results.preview_only;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -571,6 +741,11 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
           </div>
         </div>
         <h2 className="text-4xl font-bold mb-4">Your Results</h2>
+        {results.is_trial && (
+          <div className="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-4 py-2 rounded-lg inline-block text-sm font-semibold animate-pulse">
+            One-Time Free Premium Report Unlocked! 🎁
+          </div>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -594,7 +769,10 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
       {/* Detailed Analysis Section */}
       {results.age_group && (
         <div className="mb-12">
-          <h3 className="text-2xl font-bold mb-6">Detailed Analysis</h3>
+          <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            Detailed Analysis
+            {isPreview && <span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300 font-normal">Preview Mode</span>}
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="p-4 text-center">
               <p className="text-slate-400 text-sm">Age Group</p>
@@ -602,31 +780,27 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
             </Card>
             <Card className="p-4 text-center">
               <p className="text-slate-400 text-sm">Gender</p>
-              <p className="font-semibold text-lg">{results.gender_hf || results.gender_celeba}</p>
+              <p className="font-semibold text-lg">{results.gender}</p>
             </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Race/Ethnicity</p>
-              <p className="font-semibold text-lg">{results.race}</p>
+            <Card className="p-4 text-center relative overflow-hidden">
+              {isPreview && results.skin_quality === 'LOCKED' && (
+                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 cursor-pointer" onClick={onShowPremium}>
+                  <div className="bg-purple-600/20 p-2 rounded-full mb-1"><Sparkles className="w-4 h-4 text-purple-400" /></div>
+                  <span className="text-xs font-bold text-purple-400">UNLOCK</span>
+                </div>
+              )}
+              <p className="text-slate-400 text-sm">Skin Quality</p>
+              <p className="font-semibold text-lg">{results.skin_quality || 'Unknown'}</p>
             </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Hair Style</p>
-              <p className="font-semibold text-lg">{results.hair?.replace('_', ' ')}</p>
-            </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Beard</p>
-              <p className="font-semibold text-lg">{results.beard?.replace('_', ' ')}</p>
-            </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Glasses</p>
-              <p className="font-semibold text-lg">{results.glasses ? "Yes" : "No"}</p>
-            </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Smiling</p>
-              <p className="font-semibold text-lg">{results.smiling ? "Yes" : "No"}</p>
-            </Card>
-            <Card className="p-4 text-center">
-              <p className="text-slate-400 text-sm">Attractiveness (AI)</p>
-              <p className="font-semibold text-lg">{(results.attractive_score_celeba * 100).toFixed(0)}%</p>
+            <Card className="p-4 text-center relative overflow-hidden">
+              {isPreview && results.symmetry_analysis === 'LOCKED' && (
+                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 cursor-pointer" onClick={onShowPremium}>
+                  <div className="bg-purple-600/20 p-2 rounded-full mb-1"><Sparkles className="w-4 h-4 text-purple-400" /></div>
+                  <span className="text-xs font-bold text-purple-400">UNLOCK</span>
+                </div>
+              )}
+              <p className="text-slate-400 text-sm">Symmetry</p>
+              <p className="font-semibold text-lg">{results.symmetry_analysis || 'Unknown'}</p>
             </Card>
           </div>
         </div>
@@ -641,7 +815,7 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
             { title: "Beard Styles", items: results.recommendations.beardStyles },
             { title: "Clothing", items: results.recommendations.clothingStyle }
           ].map((category, i) => (
-            <Card key={i} className="h-full">
+            <Card key={i} className="h-full relative overflow-hidden">
               <h4 className="text-lg font-semibold mb-4 text-blue-400">{category.title}</h4>
               <ul className="space-y-3">
                 {category.items.map((item, idx) => (
@@ -651,10 +825,29 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
                   </li>
                 ))}
               </ul>
+              {isPreview && (
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-slate-900 to-transparent flex items-end justify-center pb-4">
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> More ideas locked
+                  </span>
+                </div>
+              )}
             </Card>
           ))}
         </div>
       </div>
+
+      {isPreview && (
+        <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-2xl p-8 text-center mb-12">
+          <h3 className="text-2xl font-bold mb-2">Unlock Your Best Self</h3>
+          <p className="text-slate-300 mb-6 max-w-lg mx-auto">
+            Get your full PDF report, symmetry analysis, skin quality score, and unlimited retries with Looks Maxer Pro.
+          </p>
+          <Button onClick={onShowPremium} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-lg px-8">
+            Unlock Full Report - $9.99
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col items-center gap-8 border-t border-slate-800 pt-10">
         <div className="text-center">
@@ -675,7 +868,7 @@ const ResultsView = ({ results, onReset, onFeedback, onBack }) => {
           </div>
         </div>
 
-        <Button onClick={onReset} size="lg" className="w-full max-w-xs">
+        <Button onClick={onReset} size="lg" className="w-full max-w-xs" variant="outline">
           Try Another Photo
         </Button>
       </div>
@@ -690,6 +883,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
@@ -705,19 +899,43 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (user && firebaseInitialized && db) {
-      const q = query(
-        collection(db, `artifacts/${appId}/users/${user.uid}/analysis`),
-        orderBy('timestamp', 'desc')
-      );
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        setHistory(snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          onDelete: handleDeleteAnalysis
-        })));
-      });
-      return () => unsubscribe();
+    if (user) {
+      if (firebaseInitialized && db) {
+        // Real Mode: Fetch from Firestore
+        const q = query(
+          collection(db, `artifacts/${appId}/users/${user.uid}/analysis`),
+          orderBy('timestamp', 'desc')
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          setHistory(snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            onDelete: handleDeleteAnalysis
+          })));
+        });
+        return () => unsubscribe();
+      } else {
+        // Local Backend Mode: Fetch from API
+        const fetchHistory = async () => {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/history?userId=${user.uid}`);
+            if (response.ok) {
+              const data = await response.json();
+              setHistory(data.history.map(item => ({
+                id: item.id || `local_${Math.random()}`, // Ensure ID exists
+                ...item,
+                onDelete: handleDeleteAnalysis
+              })));
+            }
+          } catch (err) {
+            console.error("Failed to fetch history:", err);
+          }
+        };
+        fetchHistory();
+        // Poll for updates every 5s since we don't have real-time listeners for local file
+        const interval = setInterval(fetchHistory, 5000);
+        return () => clearInterval(interval);
+      }
     }
   }, [user]);
 
@@ -735,14 +953,27 @@ function App() {
     }
   };
 
+  const handleUpgrade = async (plan) => {
+    try {
+      // Mock API call to upgrade
+      await fetch(`${API_BASE_URL}/api/subscription/upgrade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, plan: plan })
+      });
+      alert(`Successfully upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}! You can now enjoy unlimited features.`);
+      setShowPremiumModal(false);
+      // Force refresh of history/profile if needed (simplified for MVP)
+    } catch (e) {
+      alert("Upgrade failed. Please try again.");
+    }
+  };
+
   const handleAnalysis = async (imageData) => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // In a real app, we would upload the 'imageData' (base64) to storage here 
-      // and get a URL. For this MVP, we'll send a mock URL or the base64 if needed,
-      // but the backend expects 'uploadedImageURL'.
       const uploadedImageURL = "mocked_url_for_mvp";
 
       const response = await fetch(`${API_BASE_URL}/api/analyze_face`, {
@@ -751,9 +982,17 @@ function App() {
         body: JSON.stringify({
           userId: user.uid,
           imageData: imageData, // Send Base64 directly
-          uploadedImageURL: "local_upload"
+          uploadedImageURL: "local_upload",
+          userDetails: user.details || {}
         })
       });
+
+      if (response.status === 403) {
+        // Limit reached
+        setShowPremiumModal(true);
+        setLoading(false);
+        return;
+      }
 
       if (!response.ok) throw new Error('API analysis failed.');
 
@@ -762,15 +1001,14 @@ function App() {
       // Merge the ID from the backend into the results for tracking
       const resultsWithId = {
         ...data.results,
-        id: data.analysisId
+        analysisId: data.analysisId
       };
 
       setAnalysisResult(resultsWithId);
       setView('results');
-
     } catch (error) {
-      console.error("Error during analysis API call:", error);
-      alert("Analysis failed. Please try again.");
+      console.error("Analysis error:", error);
+      alert("Analysis failed. Please try again. " + error.message);
     } finally {
       setLoading(false);
     }
@@ -831,19 +1069,19 @@ function App() {
         return (
           <CameraView
             onCapture={(img) => {
-              // We can pass the captured image directly to analysis or back to upload preview
-              // Let's go to upload preview with the image pre-filled? 
-              // Actually, UploadView state is local. Let's just analyze directly or pass it somehow.
-              // Simpler: Analyze directly or modify UploadView to accept initialImage.
-              // Let's modify UploadView to accept initialImage prop, but that requires lifting state.
-              // For now, let's just analyze directly for speed.
               handleAnalysis(img);
             }}
             onBack={() => setView('upload')}
           />
         );
       case 'results':
-        return <ResultsView results={analysisResult} onReset={() => setView('upload')} onFeedback={handleFeedback} onBack={() => setView('dashboard')} />;
+        return <ResultsView
+          results={analysisResult}
+          onReset={() => setView('upload')}
+          onFeedback={handleFeedback}
+          onBack={() => setView('dashboard')}
+          onShowPremium={() => setShowPremiumModal(true)}
+        />;
       default:
         return <LandingView onGetStarted={() => setView('auth')} />;
     }
@@ -851,6 +1089,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-darker text-white font-sans selection:bg-blue-500/30">
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onUpgrade={handleUpgrade}
+      />
+
       {/* Global Navbar (except landing which has its own) */}
       {view !== 'landing' && (
         <nav className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
@@ -859,7 +1103,7 @@ function App() {
               className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400 cursor-pointer"
               onClick={() => setView(user ? 'dashboard' : 'landing')}
             >
-              LooksMax
+              Looks Maxer
             </div>
             {user && (
               <div className="flex items-center gap-4">

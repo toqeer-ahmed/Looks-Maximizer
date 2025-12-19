@@ -28,3 +28,6 @@ ml_pipeline/HuggingFace/
 # IDE
 .vscode/
 .idea/
+
+# Local Data
+local_*.json

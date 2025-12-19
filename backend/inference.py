@@ -215,8 +215,15 @@ class ModelManager:
         # --- Generate Recommendations ---
         # Merge inferred attributes with user provided details
         combined_attributes = {**results, **user_details}
+        
+        # Enforce User Gender as Source of Truth
+        if 'gender' in user_details:
+             results['gender'] = user_details['gender']
+        else:
+             results['gender'] = results.get('gender_hf') or results.get('gender_celeba') or 'Male'
+
         results['recommendations'] = self.generate_recommendations(combined_attributes)
-        results['faceShape'] = "Oval" # Placeholder
+        results['faceShape'] = results.get('faceShape', "Oval")
 
         return results
 
@@ -233,7 +240,7 @@ class ModelManager:
         user_age = int(attributes.get('age', 25)) if attributes.get('age') else 25
         
         # 2. Physical Attributes
-        height_str = attributes.get('height', '') # e.g. "5'10"
+        height_str = attributes.get('height', "5'9") 
         skin_tone = attributes.get('skinTone', 'Medium')
         face_shape = attributes.get('faceShape', 'Oval')
         
