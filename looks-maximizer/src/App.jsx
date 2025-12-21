@@ -163,6 +163,17 @@ const Card = ({ children, className = '' }) => (
 const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
   if (!isOpen) return null;
 
+  const scrollToPayment = (plan) => {
+    const section = document.getElementById('payment-instructions');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      // Highlight effect
+      section.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2', 'ring-offset-slate-900');
+      setTimeout(() => section.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2', 'ring-offset-slate-900'), 2000);
+    }
+    onUpgrade(plan);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto">
       <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-4xl w-full relative shadow-2xl shadow-purple-500/20 my-8">
@@ -195,7 +206,7 @@ const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
                 </li>
               ))}
             </ul>
-            <Button onClick={() => onUpgrade('pro')} className="w-full bg-purple-600 hover:bg-purple-500">Get Pro</Button>
+            <Button onClick={() => scrollToPayment('pro')} className="w-full bg-purple-600 hover:bg-purple-500">Get Pro</Button>
           </div>
 
           {/* Elite Plan */}
@@ -217,11 +228,11 @@ const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
                 </li>
               ))}
             </ul>
-            <Button onClick={() => onUpgrade('elite')} className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white">Get Elite</Button>
+            <Button onClick={() => scrollToPayment('elite')} className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white">Get Elite</Button>
           </div>
         </div>
 
-        <div className="mt-8 bg-slate-900/50 p-6 rounded-xl border border-blue-500/30">
+        <div id="payment-instructions" className="mt-8 bg-blue-900/20 p-6 rounded-xl border-2 border-blue-500/50 shadow-lg shadow-blue-500/10 transition-all duration-300">
           <h3 className="text-xl font-bold mb-4 text-center text-blue-400">Manual Payment Instructions</h3>
           <p className="text-sm text-slate-400 text-center mb-6">
             Please send the amount to one of the accounts below and <strong>send a screenshot</strong> to the respective contact to activate your plan.
