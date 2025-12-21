@@ -33,7 +33,13 @@ db_url = os.environ.get('DATABASE_URL')
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///local_mvp.db'
+if not db_url:
+    print("WARNING: DATABASE_URL not found, using local SQLite. For Production, ensure env var is set.")
+    db_url = 'sqlite:///local_mvp.db'
+else:
+    print(f"Connecting to Database: {db_url.split('@')[-1]}")  # Logic to show host, safe from password
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
