@@ -180,7 +180,7 @@ const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
           <div className="border border-purple-500/30 bg-slate-900/50 rounded-xl p-6 relative hover:border-purple-500 transition-colors">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">MOST POPULAR</div>
             <h3 className="text-xl font-bold mb-2">Pro</h3>
-            <div className="text-3xl font-bold mb-4">$9.99<span className="text-sm text-slate-500 font-normal">/mo</span></div>
+            <div className="text-3xl font-bold mb-4">Rs 500<span className="text-sm text-slate-500 font-normal">/mo</span></div>
             <p className="text-sm text-slate-400 mb-6">For individuals serious about looks maxing.</p>
             <ul className="space-y-3 mb-8 text-sm">
               {[
@@ -202,7 +202,7 @@ const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
           <div className="border border-amber-500/30 bg-slate-900/50 rounded-xl p-6 relative hover:border-amber-500 transition-colors">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 rounded-full text-xs font-bold shadow-lg text-black">ELITE</div>
             <h3 className="text-xl font-bold mb-2 text-amber-500">Elite</h3>
-            <div className="text-3xl font-bold mb-4">$19.99<span className="text-sm text-slate-500 font-normal">/mo</span></div>
+            <div className="text-3xl font-bold mb-4">Rs 1000<span className="text-sm text-slate-500 font-normal">/mo</span></div>
             <p className="text-sm text-slate-400 mb-6">For influencers & content creators.</p>
             <ul className="space-y-3 mb-8 text-sm">
               {[
@@ -221,9 +221,29 @@ const PremiumModal = ({ isOpen, onClose, onUpgrade }) => {
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Cancel anytime. Secure payment via Stripe.
-        </p>
+        <div className="mt-8 bg-slate-900/50 p-6 rounded-xl border border-blue-500/30">
+          <h3 className="text-xl font-bold mb-4 text-center text-blue-400">Manual Payment Instructions</h3>
+          <p className="text-sm text-slate-400 text-center mb-6">
+            Please send the amount to one of the accounts below and <strong>send a screenshot</strong> to the respective contact to activate your plan.
+          </p>
+          <div className="grid gap-4 md:grid-cols-3 text-sm">
+            <div className="bg-slate-800 p-4 rounded-lg text-center">
+              <div className="font-bold text-white mb-1">Toqeer Ahmed</div>
+              <div className="text-slate-300 font-mono">03339200251</div>
+              <div className="text-orange-400 font-semibold mt-1">Sadapay</div>
+            </div>
+            <div className="bg-slate-800 p-4 rounded-lg text-center">
+              <div className="font-bold text-white mb-1">Mustajaab</div>
+              <div className="text-slate-300 font-mono">03136725787</div>
+              <div className="text-green-400 font-semibold mt-1">Nayapay</div>
+            </div>
+            <div className="bg-slate-800 p-4 rounded-lg text-center">
+              <div className="font-bold text-white mb-1">Hiba</div>
+              <div className="text-slate-300 font-mono text-xs">19797901102899</div>
+              <div className="text-red-400 font-semibold mt-1">HBL</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -297,7 +317,7 @@ const LandingView = ({ onGetStarted }) => (
           <Card className="text-left border-purple-500/50 bg-gradient-to-b from-slate-800 to-slate-900 relative overflow-hidden flex flex-col transform scale-105 shadow-2xl shadow-purple-900/20 z-10">
             <div className="absolute top-0 right-0 bg-purple-500 text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
             <h3 className="text-xl font-bold mb-2">Pro</h3>
-            <div className="text-3xl font-bold mb-6">$9.99<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+            <div className="text-3xl font-bold mb-6">Rs 500<span className="text-lg text-slate-500 font-normal">/mo</span></div>
             <ul className="space-y-4 mb-8 flex-1">
               <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> <strong>Unlimited</strong> Uploads</li>
               <li className="flex items-center gap-3 text-white"><CheckCircle className="w-5 h-5 text-purple-400" /> Detailed Reports (PDF)</li>
@@ -310,7 +330,7 @@ const LandingView = ({ onGetStarted }) => (
           {/* Elite Plan */}
           <Card className="text-left border-amber-500/30 bg-slate-900/50 flex flex-col">
             <h3 className="text-xl font-bold mb-2 text-amber-500">Elite</h3>
-            <div className="text-3xl font-bold mb-6">$19.99<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+            <div className="text-3xl font-bold mb-6">Rs 1000<span className="text-lg text-slate-500 font-normal">/mo</span></div>
             <ul className="space-y-4 mb-8 flex-1">
               <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Everything in Pro</li>
               <li className="flex items-center gap-3 text-slate-300"><CheckCircle className="w-5 h-5 text-amber-500" /> Before/After Comparisons</li>
@@ -484,9 +504,10 @@ const DashboardView = ({ user, onStartAnalysis, history }) => {
     }
   };
 
-  const handleUpgrade = () => {
-    alert("This is a demo! In a real app, this would open Stripe checkout.");
-    setShowPremiumModal(false);
+  const handleUpgrade = (plan) => {
+    alert(`To upgrade to ${plan.toUpperCase()}, please send the payment to one of the accounts listed below and share the screenshot.`);
+    // We keep the modal open so they can see the details
+    // setShowPremiumModal(false); 
   };
 
   return (
