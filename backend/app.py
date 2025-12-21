@@ -8,16 +8,6 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSONB
 
-import os
-import time
-import datetime
-import json
-import hashlib
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import JSONB
-
 # --- Configuration ---
 # Use /tmp for instance path to avoid PermissionError on read-only file systems (Railway/Render)
 app = Flask(__name__, instance_path='/tmp')
@@ -80,12 +70,29 @@ class Feedback(db.Model):
     helpful = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+class Metric(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event = db.Column(db.String(50), nullable=False) # e.g., 'signup', 'analysis'
+    user_email = db.Column(db.String(120)) # Optional, for easy reading
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    data = db.Column(db.JSON)
+
 # Initialize DB (Create Tables)
 with app.app_context():
     db.create_all()
 
 # --- Repositories (Adapters) ---
 # We simulate the old repository interface but use SQLAlchemy now
+
+# --- Helper Functions ---
+
+def log_metric(event, user_email=None, data=None):
+    try:
+        metric = Metric(event=event, user_email=user_email, data=data)
+        db.session.add(metric)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error logging metric: {e}")
 
 class UserRepository:
     def create_user(self, email, password, details):
@@ -106,6 +113,10 @@ class UserRepository:
         )
         db.session.add(new_user)
         db.session.commit()
+        
+        # Log Metric
+        log_metric('signup', email, {"platform": "web"})
+        
         return True, self._to_dict(new_user)
 
     def verify_user(self, email, password):
@@ -123,6 +134,7 @@ class UserRepository:
         if user:
             user.plan = new_plan
             db.session.commit()
+            log_metric('plan_upgrade', user.email, {"new_plan": new_plan})
             return True
         return False
         
@@ -150,6 +162,10 @@ class AnalysisRepository:
         )
         db.session.add(new_analysis)
         db.session.commit()
+        
+        # Log Metric (get email from user_id if needed, or just log ID)
+        log_metric('analysis_completed', user_id, {"score": results.get('lookScore')})
+        
         return new_analysis.id
 
     def get_user_history(self, user_id):
@@ -161,7 +177,7 @@ class AnalysisRepository:
             item["timestamp"] = {"seconds": a.timestamp.timestamp()} # Match Firestore format roughly
             history.append(item)
         return history
-
+    
     def delete_analysis(self, analysis_id, user_id):
         analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
         if analysis:
@@ -169,6 +185,34 @@ class AnalysisRepository:
             db.session.commit()
             return True
         return False
+
+# --- Admin Endpoints ---
+
+@app.route('/api/admin/stats', methods=['GET'])
+def admin_stats():
+    try:
+        user_count = User.query.count()
+        analysis_count = Analysis.query.count()
+        
+        # Plan breakdown
+        plans = db.session.query(User.plan, db.func.count(User.plan)).group_by(User.plan).all()
+        plan_stats = {p[0]: p[1] for p in plans}
+        
+        # Recent metrics
+        recent_metrics = Metric.query.order_by(Metric.timestamp.desc()).limit(20).all()
+        metrics_log = [{'event': m.event, 'time': str(m.timestamp), 'email': m.user_email, 'data': m.data} for m in recent_metrics]
+        
+        return jsonify({
+            "status": "success",
+            "summary": {
+                "total_users": user_count,
+                "total_analyses": analysis_count,
+                "plans": plan_stats
+            },
+            "recent_activity": metrics_log
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 class SubscriptionManager:
     def check_limit(self, user_id, plan):
